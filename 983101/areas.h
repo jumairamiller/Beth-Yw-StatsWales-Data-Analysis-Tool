@@ -6,7 +6,7 @@
   | BETH YW? WELSH GOVERNMENT DATA PARSER |
   +---------------------------------------+
 
-  AUTHOR: <STUDENT NUMBER>
+  AUTHOR: <983101>
 
   This file contains the Areas class, which is responsible for parsing data
   from a standard input stream and converting it into a series of objects:
@@ -78,11 +78,13 @@ public:
       const StringFilterSet * const areas = nullptr)
       noexcept(false);
 
+  //Standard populate function
   void populate(
       std::istream& is,
       const BethYw::SourceDataType& type,
-      const BethYw::SourceColumnMapping& cols) noexcept(false);
+      const BethYw::SourceColumnMapping& cols) noexcept(false); // function may throw exceptions if needed
 
+  // Overload the standard populate function to consider filters
   void populate(
       std::istream& is,
       const BethYw::SourceDataType& type,
@@ -90,7 +92,7 @@ public:
       const StringFilterSet * const areasFilter = nullptr,
       const StringFilterSet * const measuresFilter = nullptr,
       const YearFilterTuple * const yearsFilter = nullptr)
-      noexcept(false);
+      noexcept(false);// function may throw exceptions if needed
 
   std::string toJSON() const;
 };

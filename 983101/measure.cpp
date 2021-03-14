@@ -6,7 +6,7 @@
   | BETH YW? WELSH GOVERNMENT DATA PARSER |
   +---------------------------------------+
 
-  AUTHOR: <STUDENT NUMBER>
+  AUTHOR: <983101>
 
   This file contains the implementation of the Measure class. Measure is a
   very simple class that needs to contain a few member variables for its name,

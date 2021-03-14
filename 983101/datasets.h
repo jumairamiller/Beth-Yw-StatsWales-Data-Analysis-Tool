@@ -107,12 +107,28 @@ struct InputFileSource {
   const SourceColumnMapping COLS;
 };
 
+
 /*
   In this namespace, we store all the data for the various datasets that can
   be found in the datasets directory.
+  Each InputFileSource instance in this namespace includes
+  (.CODE) the program argument value for filtering the dataset,
+  (.NAME) a human-readable name for the dataset,
+  (.FILE) a file name,
+  (.PARSER) a SourceDataType enum value i.e. the type of file being parsed (used by functions in areas.cpp),
+  (.COLS) and a mapping of all relevant columns from enum SourceColumns to the string value of the columns
+
 */
 namespace InputFiles {
 
+
+/*
+ * List of areas in Wales; maps local authority code to their english and welsh names - thus the dataset
+ * has 3 columns.
+ *
+ * This is a special dataset that should ALWAYS be imported irrespective of the -d or --datasets argument
+ * But the imported areas can still be filtered by -a or --areas argument
+ */
 const InputFileSource AREAS = {
   "areas",
   "areas",
@@ -123,53 +139,90 @@ const InputFileSource AREAS = {
       {AUTH_NAME_ENG, "Name (eng)"},
       {AUTH_NAME_CYM, "Name (cym)"}
   }
-}; // const InputFileSource AREAS
+};
 
+
+/*
+ * JSON file for "Population Density by Local Authority"
+ * The popden info will be included if we dont have "-d arguments" or "--datasets argument",
+ * or if we have "-d all" or "--datasets all", or
+ * if we have "-d popden" or "--datasets popden"
+ *
+ * There are three measures in this file:
+ * Measure_Code can be one of three things: "Pop", "Dens", "Areas; their respective
+ * Measure_Name can are one of three things: "Population", "Population density", "Land area"
+ */
 const InputFileSource POPDEN = {
   "popden",
   "Population density",
   "popu1009.json",
   BethYw::SourceDataType::WelshStatsJSON,
   {
-    {AUTH_CODE,     "Localauthority_Code"},
+    {AUTH_CODE,     "Localauthority_Code"}, // used in the -a or --areas program argument filter
     {AUTH_NAME_ENG, "Localauthority_ItemName_ENG"},
-    {MEASURE_CODE,  "Measure_Code"},
+    {MEASURE_CODE,  "Measure_Code"}, // used in the -m or --measure program argument filter
     {MEASURE_NAME,  "Measure_ItemName_ENG"},
-    {YEAR,          "Year_Code"},
-    {VALUE,         "Data"}
+    {YEAR,          "Year_Code"}, // used in the -y or --years argument filter
+    {VALUE,         "Data"} // this contains the value for the given local authority, measure, and year
   }
-}; // const InputFileSource POPDEN
+};
 
+
+/*
+ * JSON file for "Active Businesses by Area and Year"
+ *
+ * There are 8 different measures for this file:
+ * 8 MEASURE_CODEs(MEASURE_NAMEs):
+ *      A (the number of Active enterprises),
+ *      B (the number of newly opened enterprises),
+ *      D (the number of enterprises closing),
+ *      PA (the number of active enterprises per 10,000 of the population aged 16 to 64),
+ *      PB (the number of births per 10,000 of the population aged 16 to 64),
+ *      PD (the number of deaths per 10,000 of the population aged 16 to 64),
+ *      RB (the birth rate as a percentage of active enterprises),
+ *      RD (the death rate as a percentage of active enterprises)
+ */
 const InputFileSource BIZ = {
   "biz",
   "Active Businesses",
   "econ0080.json",
   BethYw::SourceDataType::WelshStatsJSON,
   {
-    {AUTH_CODE,     "Area_Code"},
+    {AUTH_CODE,     "Area_Code"}, //used in the -a or --areas program argument filter
     {AUTH_NAME_ENG, "Area_ItemName_ENG"},
-    {MEASURE_CODE,  "Variable_Code"},
+    {MEASURE_CODE,  "Variable_Code"}, //used in the -m or --measure program argument filter
     {MEASURE_NAME,  "Variable_ItemNotes_ENG"},
-    {YEAR,          "Year_Code"},
-    {VALUE,         "Data"}
+    {YEAR,          "Year_Code"}, //used in the -y or --years argument filter
+    {VALUE,         "Data"} //this contains the value for the given local authority, measure, and year
   }
-}; // const InputFileSource BIZ
+};
 
+
+/*
+ * JSON file for air quality indicators, by local authority
+ * 3 MEASURES:
+ * MEASURE_CODE(MEASURE NAME): no2(NO2 readings), pm10(PM10 readings), pm2-5(PM2.5 readings)
+ */
 const InputFileSource AQI = {
   "aqi",
   "Air Quality Indicators",
   "envi0201.json",
   BethYw::SourceDataType::WelshStatsJSON,
   {
-    {AUTH_CODE,     "Area_Code"},
+    {AUTH_CODE,     "Area_Code"}, //used in the -a or --areas program argument filter
     {AUTH_NAME_ENG, "Area_ItemName_ENG"},
-    {MEASURE_CODE,  "Pollutant_ItemName_ENG"},
+    {MEASURE_CODE,  "Pollutant_ItemName_ENG"},//used in the -m or --measure program argument filter
     {MEASURE_NAME,  "Pollutant_ItemName_ENG"},
-    {YEAR,          "Year_Code"},
-    {VALUE,         "Data"}
+    {YEAR,          "Year_Code"},//used in the -y or --years argument filter
+    {VALUE,         "Data"}//this contains the value for the given local authority, measure, and year
   }
-}; // const InputFileSource AQI
+};
 
+
+/*
+ * JSON file for "rail passenger journeys by local authority and year"
+ * This is a different type of dataset as there is only ONE measure in it
+ */
 const InputFileSource TRAINS = {
   "trains",
   "Rail passenger journeys",
@@ -183,7 +236,8 @@ const InputFileSource TRAINS = {
     {YEAR,                "Year_Code"},
     {VALUE,               "Data"}
   }
-}; // const InputFileSource TRAINS
+};
+
 
 const InputFileSource COMPLETE_POPDEN = {
   "complete-popden",
