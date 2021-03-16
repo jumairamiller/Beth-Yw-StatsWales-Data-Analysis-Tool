@@ -33,7 +33,7 @@
 #include "areas.h"
 #include "datasets.h"
 #include "bethyw.h"
-#include "input.h"
+// #include "input.h"
 
 /*
   Run Beth Yw?, parsing the command line arguments, importing the data,
@@ -66,9 +66,9 @@ int BethYw::run(int argc, char *argv[]) {
 
   // Parse other arguments and import data
   // auto datasetsToImport = BethYw::parseDatasetsArg(args);
-  // auto areasFilter      = BethYw::parseAreasArg(args);
-  // auto measuresFilter   = BethYw::parseMeasuresArg(args);
-  // auto yearsFilter      = BethYw::parseYearsArg(args);
+  //auto areasFilter      = BethYw::parseAreasArg(args);
+  //auto measuresFilter   = BethYw::parseMeasuresArg(args);
+  //auto yearsFilter      = BethYw::parseYearsArg(args);
 
   Areas data = Areas();
 
@@ -144,9 +144,7 @@ cxxopts::Options BethYw::cxxoptsSetup() {
   return cxxopts;
 }
 
-/*
-  TODO: BethYw::parseDatasetsArg(args)
-
+/**
   Parse the datasets argument passed into the command line. 
 
   The datasets argument is optional, and if it is not included, all datasets 
@@ -178,31 +176,63 @@ cxxopts::Options BethYw::cxxoptsSetup() {
  */
 std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
     cxxopts::ParseResult& args) {
-  // This function is incomplete, but to get you started...
-  // You may want to delete much of these // comments too!
 
-  // Retrieve all valid datasets, see datasets.h
-  size_t numDatasets = InputFiles::NUM_DATASETS;
-  auto &allDatasets = InputFiles::DATASETS;
+    // Retrieve all valid datasets, see datasets.h
+    size_t numDatasets = InputFiles::NUM_DATASETS;
+    auto &allDatasets = InputFiles::DATASETS;
 
-  // Create the container for the return type
-  std::vector<InputFileSource> datasetsToImport;
+    // Create the container for the return type
+    std::vector<InputFileSource> datasetsToImport;
 
-  // You can get the std::vector of arguments from cxxopts like this.
-  // Note that this function will throw an exception if datasets is not set as 
-  // an argument. Check the documentation! Read it and understand it.
-  auto inputDatasets = args["datasets"].as<std::vector<std::string>>();
+    // retrieve and store std::vector of arguments from cxxopts
+    auto inputDatasets = args["datasets"].as<std::vector<std::string>>();
 
-  // You now need to compare the strings in this vector to the keys in
-  // allDatasets above. Populate datasetsToImport with the values
-  // from allDatasets above and then return a vector
+    // to avoid case-insensitive argument inputs, ensure each string argument is in all lowercase letters
+    if (!inputDatasets.empty()){
+        for (auto it = inputDatasets.begin(); it != inputDatasets.end(); ++it) {
+            std::string &code = *it;
+            std::transform(code.begin(), code.end(), code.begin(), ::tolower);
+        }
+    }
 
-  // You'll want to ignore/remove the following lines of code, they simply
-  // import all datasets (for now) as an example to get you started
-  for(unsigned int i = 0; i < numDatasets; i++)
-      datasetsToImport.push_back(allDatasets[i]);
+    // if no argument is provided, or argument contains "all", retrieve all valid datasets
+    if (inputDatasets.empty() ||
+            ((inputDatasets.size() ==  1) && (inputDatasets[0] == "all")) ||
+            (std::find(inputDatasets.begin(), inputDatasets.end(), "all") != inputDatasets.end())){
+        for (int i = 0; i < numDatasets; ++i) {
+            datasetsToImport.push_back(allDatasets[i]);
+        }
+    }
+    // otherwise identify datasets to import by comparing strings in vector of input arguments to the keys in allDatasets
+    else {
+        // iterate through each dataset argument passed in
+        for (auto it = inputDatasets.begin(); it != inputDatasets.end(); ++it) {
+            bool matchFound = false;
+            std::string &code = *it;
+            // populate the return vector, datasetsToImport, with all valid arguments from allDatasets
+            for (int j = 0; j < numDatasets; j++) {
+                if (code == allDatasets[j].CODE) {
+                    matchFound = true;
+                    datasetsToImport.push_back(allDatasets[j]);
+                    break;
+                }
+            }
+            // throw exception if argument is not found in allDatasets
+            if (!matchFound) {
+                throw std::invalid_argument("No dataset matches key: " + code);
+            }
+        }
+    }
 
-  return datasetsToImport;
+    // if none of the inputDatasets values were valid arguments, args was effectively empty, so import allDatasets
+    if (datasetsToImport.empty()){
+        for (int i = 0; i < numDatasets; ++i) {
+            datasetsToImport.push_back(allDatasets[i]);
+        }
+    }
+
+    return datasetsToImport;
+
 }
 
 /*
@@ -230,8 +260,7 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
     std::invalid_argument if the argument contains an invalid areas value with
     message: Invalid input for area argument
 */
-std::unordered_set<std::string> BethYw::parseAreasArg(
-    cxxopts::ParseResult& args) {
+std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args) {
   // The unordered set you will return
   std::unordered_set<std::string> areas;
 
