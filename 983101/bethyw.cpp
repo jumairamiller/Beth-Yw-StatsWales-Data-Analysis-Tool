@@ -270,11 +270,6 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
   std::ifstream areasFile;
   areasFile.open("./datasets/areas.csv");
 
-  // throw error if file does not open
-  if(!areasFile.is_open()){
-      std::cout <<"ERROR when opening areas.csv file";
-  }
-
   //while file has content, store all local authority codes
   std::string line;
   while(getline(areasFile,line, ',')){
@@ -282,6 +277,7 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
       getline(areasFile, line,',');
       getline(areasFile, line);
   }
+  areasFile.close();
 
   // Retrieve the areas argument
   auto areasInput = args["areas"].as<std::vector<std::string>>();
@@ -315,9 +311,7 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
   return areas;
 }
 
-/*
-  TODO: BethYw::parseMeasuresArg(args)
-
+/**
   Parse the measures command line argument, which is optional. If it doesn't 
   exist or exists and contains "all" as value (any case), all measures should
   be imported.
