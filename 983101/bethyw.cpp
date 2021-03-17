@@ -301,7 +301,7 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
               areas.clear();
               break;
           }
-              // otherwise add argument to filter if it's a valid area code, otherwise throw exception
+          // otherwise add argument to filter if it's a valid area code, otherwise throw exception
           else {
               if(std::find(allAreas.begin(), allAreas.end(), area) != allAreas.end()){
                   areas.insert(area);
@@ -343,6 +343,39 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
 std::unordered_set<std::string> BethYw::parseMeasuresArg(cxxopts::ParseResult& args){
     // The unordered set you will return
     std::unordered_set<std::string> measures;
+
+    // unordered set of all possible measures available across all datasets
+    std::unordered_set<std::string> allMeasures = {"pop", "dens", "area", "a", "b", "c", "pa", "pb",
+                                                   "pd", "rb", "rd", "no2", "pm10", "pm2-5", "rail"};
+
+    // Retrieve the areas argument
+    auto measuresInput = args["measures"].as<std::vector<std::string>>();
+
+    // if no arguments were provided, return empty set
+    if (measuresInput.empty()){
+        return measures;
+    }
+    // otherwise filter input arguments for valid measure codes or "all"
+    else {
+        for(auto it = measuresInput.begin(); it != measuresInput.end(); ++it){
+            std::string & measure = *it;
+            std::transform(measure.begin(), measure.end(), measure.end(), ::tolower);
+            // convert case-insensitive string argument inputs to all lowercase lettered strings
+            if (measure == "all") {
+                measures.clear();
+                break;
+            }
+            // otherwise add argument to filter if it's a valid measure code, otherwise throw exception
+            else {
+                if(std::find(allMeasures.begin(), allMeasures.end(), measure) != allMeasures.end()){
+                    measures.insert(measure);
+                }
+                else{
+                    throw std::invalid_argument("Invalid input for area argument");
+                }
+            }
+        }
+    }
     return measures;
 }
 
