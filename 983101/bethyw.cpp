@@ -23,6 +23,7 @@
 */
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <tuple>
 #include <unordered_set>
@@ -235,9 +236,7 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
 
 }
 
-/*
-  TODO: BethYw::parseAreasArg(args)
-  
+/**
   Parses the areas command line argument, which is optional. If it doesn't 
   exist or exists and contains "all" as value (any case), all areas should be
   imported, i.e., the filter should be an empty set.
@@ -264,11 +263,55 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
   // The unordered set you will return
   std::unordered_set<std::string> areas;
 
-  // Retrieve the areas argument like so:
-  auto temp = args["areas"].as<std::vector<std::string>>();
-  
-  // ...
-  
+  // unordered set to hold all area codes from areas.csv dataset
+  std::unordered_set<std::string> allAreas;
+
+  // Retrieve list all all areas from datasets.h
+  std::ifstream areasFile;
+  areasFile.open("./datasets/areas.csv");
+
+  // throw error if file does not open
+  if(!areasFile.is_open()){
+      std::cout <<"ERROR when opening areas.csv file";
+  }
+
+  //while file has content, store all local authority codes
+  std::string line;
+  while(getline(areasFile,line, ',')){
+      allAreas.insert(line);
+      getline(areasFile, line,',');
+      getline(areasFile, line);
+  }
+
+  // Retrieve the areas argument
+  auto areasInput = args["areas"].as<std::vector<std::string>>();
+
+  // if no arguments were provided, return empty set
+  if (areasInput.empty()){
+      return areas;
+  }
+  // otherwise filter input arguments for valid authority codes or "all"
+  else {
+      for (auto it = areasInput.begin(); it != areasInput.end(); ++it) {
+          std::string &area = *it;
+          // convert case-insensitive string argument inputs to all uppercase-lettered strings
+          std::transform(area.begin(), area.end(), area.begin(), ::toupper);
+          // if argument is "all" clear set and exit loop
+          if (area == "ALL") {
+              areas.clear();
+              break;
+          }
+              // otherwise add argument to filter if it's a valid area code, otherwise throw exception
+          else {
+              if(std::find(allAreas.begin(), allAreas.end(), area) != allAreas.end()){
+                  areas.insert(area);
+              }
+              else{
+                  throw std::invalid_argument("Invalid input for area argument");
+              }
+          }
+      }
+  }
   return areas;
 }
 
@@ -297,7 +340,11 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
     std::invalid_argument if the argument contains an invalid measures value
     with the message: Invalid input for measures argument
 */
-
+std::unordered_set<std::string> BethYw::parseMeasuresArg(cxxopts::ParseResult& args){
+    // The unordered set you will return
+    std::unordered_set<std::string> measures;
+    return measures;
+}
 
 /*
   TODO: BethYw::parseYearsArg(args)
@@ -322,7 +369,10 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
     std::invalid_argument if the argument contains an invalid years value with
     the message: Invalid input for years argument
 */
-
+std::tuple<unsigned int, unsigned int> BethYw::parseYearsArg(cxxopts::ParseResult& args){
+    std::tuple<unsigned int, unsigned int> years;
+    return years;
+}
 
 /*
   TODO: BethYw::loadAreas(areas, dir, areasFilter)

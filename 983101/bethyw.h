@@ -48,8 +48,7 @@ cxxopts::Options cxxoptsSetup();
   Parse the datasets argument and return a std::vector of all the datasets
   to import. InputFileSource is declared in datasets.h.
 */
-std::vector<BethYw::InputFileSource> parseDatasetsArg(
-  cxxopts::ParseResult& args);
+std::vector<BethYw::InputFileSource> parseDatasetsArg(cxxopts::ParseResult& args);
 
 /*
   Parse the areas argument and return a std::unordered_set of all the
@@ -57,6 +56,11 @@ std::vector<BethYw::InputFileSource> parseDatasetsArg(
 */
 std::unordered_set<std::string> parseAreasArg(cxxopts::ParseResult& args);
 
+
+std::unordered_set<std::string> parseMeasuresArg(cxxopts::ParseResult& args);
+
+
+std::tuple<unsigned int, unsigned int> parseYearsArg(cxxopts::ParseResult& args);
 } // namespace BethYw
 
 #endif // BETHYW_H_

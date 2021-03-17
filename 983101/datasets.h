@@ -54,12 +54,12 @@ enum SourceDataType {
 };
 
 /*
-  Data from the different sources typically hagve different column headings
+  Data from the different sources typically have different column headings
   for the same value (e.g. some might say "Year" whereas others might say
   "Year_Code"). Here we create another enum for these column headings for
   the parser.
 
-  Each input passed to the Areas object will have to specifiy a
+  Each input passed to the Areas object will have to specify a
   an unordered map to match each of these enum values into a string that
   the source contains.
 */
@@ -149,7 +149,7 @@ const InputFileSource AREAS = {
  * if we have "-d popden" or "--datasets popden"
  *
  * There are three measures in this file:
- * Measure_Code can be one of three things: "Pop", "Dens", "Areas; their respective
+ * Measure_Code can be one of three things: "Pop", "Dens", "Areas". Their respective
  * Measure_Name can are one of three things: "Population", "Population density", "Land area"
  */
 const InputFileSource POPDEN = {
