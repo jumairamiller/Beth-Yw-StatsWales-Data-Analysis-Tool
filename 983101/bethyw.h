@@ -56,10 +56,19 @@ std::vector<BethYw::InputFileSource> parseDatasetsArg(cxxopts::ParseResult& args
 */
 std::unordered_set<std::string> parseAreasArg(cxxopts::ParseResult& args);
 
-
+/*
+  Parse the measures argument and return a std::unordered_set of all the
+  measures to import, or an empty set if all measures should be imported.
+*/
 std::unordered_set<std::string> parseMeasuresArg(cxxopts::ParseResult& args);
 
-
+/*
+  Parse the years argument, which may be of form YYYY or YYYY-ZZZZ,
+  and return a tuple of two integers representing the start and end year
+  std::tuple<unsigned int, unsigned int> of all the years (inclusive)
+  that need to be filtered. Return <0,0> tuple if no argument is provided,
+  or if one of both of year values are 0
+*/
 std::tuple<unsigned int, unsigned int> parseYearsArg(cxxopts::ParseResult& args);
 } // namespace BethYw
 

@@ -13,13 +13,6 @@
   don't need a class here. Classes are for modelling data, and so forth, but
   here the code is pretty much a sequential block of code (BethYw::run())
   calling a series of helper functions.
-
-  TODO: This file contains numerous functions you must implement. Each one
-  is denoted with a TODO in the block comment. Note that some code has been
-  provided in some functions to get you started, but you should read through
-  this code and make sure it is safe and complete. You may need to remove or
-  modify the provided code to get your program to work fully. You may implement
-  additional functions not specified.
 */
 
 #include <iostream>
@@ -28,6 +21,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <vector>
+#include <algorithm>
 
 #include "lib_cxxopts.hpp"
 
@@ -66,7 +60,7 @@ int BethYw::run(int argc, char *argv[]) {
   std::string dir = args["dir"].as<std::string>() + DIR_SEP;
 
   // Parse other arguments and import data
-  // auto datasetsToImport = BethYw::parseDatasetsArg(args);
+  //auto datasetsToImport = BethYw::parseDatasetsArg(args);
   //auto areasFilter      = BethYw::parseAreasArg(args);
   //auto measuresFilter   = BethYw::parseMeasuresArg(args);
   //auto yearsFilter      = BethYw::parseYearsArg(args);
@@ -200,7 +194,7 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
     if (inputDatasets.empty() ||
             ((inputDatasets.size() ==  1) && (inputDatasets[0] == "all")) ||
             (std::find(inputDatasets.begin(), inputDatasets.end(), "all") != inputDatasets.end())){
-        for (int i = 0; i < numDatasets; ++i) {
+        for (unsigned int i = 0; i < numDatasets; ++i) {
             datasetsToImport.push_back(allDatasets[i]);
         }
     }
@@ -211,7 +205,7 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
             bool matchFound = false;
             std::string &code = *it;
             // populate the return vector, datasetsToImport, with all valid arguments from allDatasets
-            for (int j = 0; j < numDatasets; j++) {
+            for (unsigned int j = 0; j < numDatasets; j++) {
                 if (code == allDatasets[j].CODE) {
                     matchFound = true;
                     datasetsToImport.push_back(allDatasets[j]);
@@ -227,7 +221,7 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
 
     // if none of the inputDatasets values were valid arguments, args was effectively empty, so import allDatasets
     if (datasetsToImport.empty()){
-        for (int i = 0; i < numDatasets; ++i) {
+        for (unsigned int i = 0; i < numDatasets; ++i) {
             datasetsToImport.push_back(allDatasets[i]);
         }
     }
@@ -263,32 +257,16 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
   // The unordered set you will return
   std::unordered_set<std::string> areas;
 
-  // unordered set to hold all area codes from areas.csv dataset
-  std::unordered_set<std::string> allAreas;
-
-  // Retrieve list all all areas from datasets.h
-  std::ifstream areasFile;
-  areasFile.open("./datasets/areas.csv");
-
-  //while file has content, store all local authority codes
-  std::string line;
-  while(getline(areasFile,line, ',')){
-      allAreas.insert(line);
-      getline(areasFile, line,',');
-      getline(areasFile, line);
-  }
-  areasFile.close();
-
   // Retrieve the areas argument
-  auto areasInput = args["areas"].as<std::vector<std::string>>();
+  auto inputAreas = args["areas"].as<std::vector<std::string>>();
 
   // if no arguments were provided, return empty set
-  if (areasInput.empty()){
+  if (inputAreas.empty()){
       return areas;
   }
   // otherwise filter input arguments for valid authority codes or "all"
   else {
-      for (auto it = areasInput.begin(); it != areasInput.end(); ++it) {
+      for (auto it = inputAreas.begin(); it != inputAreas.end(); ++it) {
           std::string &area = *it;
           // convert case-insensitive string argument inputs to all uppercase-lettered strings
           std::transform(area.begin(), area.end(), area.begin(), ::toupper);
@@ -297,12 +275,12 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
               areas.clear();
               break;
           }
-          // otherwise add argument to filter if it's a valid area code, otherwise throw exception
+          // otherwise add argument to filter if it is valid, if not, throw exception
           else {
-              if(std::find(allAreas.begin(), allAreas.end(), area) != allAreas.end()){
+              if (area.length() == 9 && area.find("W060000") != std::string::npos) {
                   areas.insert(area);
               }
-              else{
+              else {
                   throw std::invalid_argument("Invalid input for area argument");
               }
           }
@@ -338,43 +316,34 @@ std::unordered_set<std::string> BethYw::parseMeasuresArg(cxxopts::ParseResult& a
     // The unordered set you will return
     std::unordered_set<std::string> measures;
 
-    // unordered set of all possible measures available across all datasets
-    std::unordered_set<std::string> allMeasures = {"pop", "dens", "area", "a", "b", "c", "pa", "pb",
-                                                   "pd", "rb", "rd", "no2", "pm10", "pm2-5", "rail"};
-
     // Retrieve the areas argument
-    auto measuresInput = args["measures"].as<std::vector<std::string>>();
+    auto inputMeasures = args["measures"].as<std::vector<std::string>>();
 
     // if no arguments were provided, return empty set
-    if (measuresInput.empty()){
+    if (inputMeasures.empty()){
         return measures;
     }
     // otherwise filter input arguments for valid measure codes or "all"
     else {
-        for(auto it = measuresInput.begin(); it != measuresInput.end(); ++it){
+        for(auto it = inputMeasures.begin(); it != inputMeasures.end(); ++it){
             std::string & measure = *it;
-            std::transform(measure.begin(), measure.end(), measure.end(), ::tolower);
             // convert case-insensitive string argument inputs to all lowercase lettered strings
+            std::transform(measure.begin(), measure.end(), measure.end(), ::tolower);
+            // if arguments contain "all" then return empty filter set (i.e. all measures will be included)
             if (measure == "all") {
                 measures.clear();
                 break;
             }
             // otherwise add argument to filter if it's a valid measure code, otherwise throw exception
             else {
-                if(std::find(allMeasures.begin(), allMeasures.end(), measure) != allMeasures.end()){
-                    measures.insert(measure);
-                }
-                else{
-                    throw std::invalid_argument("Invalid input for area argument");
-                }
+                measures.insert(measure);
             }
         }
     }
     return measures;
 }
 
-/*
-  TODO: BethYw::parseYearsArg(args)
+/**
 
   Parse the years command line argument. Years is either a four digit year 
   value, or two four digit year values separated by a hyphen (i.e. either 
@@ -397,8 +366,43 @@ std::unordered_set<std::string> BethYw::parseMeasuresArg(cxxopts::ParseResult& a
     the message: Invalid input for years argument
 */
 std::tuple<unsigned int, unsigned int> BethYw::parseYearsArg(cxxopts::ParseResult& args){
-    std::tuple<unsigned int, unsigned int> years;
-    return years;
+    // initialise default return value
+    unsigned int startYear, endYear;
+    //std::tuple<unsigned int, unsigned int> years (0,0);
+
+    // Retrieve arguments of "-y" or "--years"
+    auto inputYears = args["years"].as<std::string>();
+    // remove any spaces
+    inputYears.erase(remove_if(inputYears.begin(), inputYears.end(), isspace), inputYears.end());
+
+    // if '-' is found within the args, extract two years from arguments
+    if (inputYears.find('-') != std::string::npos) {
+        try {
+            // https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
+            startYear = std::stoi(inputYears.substr(0, inputYears.find('-')));
+            endYear = std::stoi(inputYears.erase(0, (inputYears.find('-') + 1)));
+        } catch (std::exception & ia) {
+            throw std::invalid_argument("Invalid input for years argument");
+        }
+    }
+    // otherwise extract the single year argument
+    else {
+        try {
+            startYear = endYear = std::stoi(inputYears);
+        } catch (std::exception & ia) {
+            throw std::invalid_argument("Invalid input for years argument");
+        }
+    }
+
+    // no filter is applied if argument is empty, or if the single year provided is 0,
+    // or if either of the two years provided is 0
+    if (inputYears.empty() || inputYears == "0" || startYear == 0 || endYear == 0){
+        return std::tuple<unsigned int, unsigned int>(0,0);
+    }
+    // otherwise return the filter depending on whether one or two years were parsed
+    else {
+        return std::tuple<unsigned int, unsigned int>(startYear,endYear);
+    }
 }
 
 /*
