@@ -36,7 +36,12 @@
 */
 class InputSource {
 protected:
-  InputSource(const std::string& source);
+    std::string source;
+    InputSource(const std::string& source);
+
+public:
+    virtual ~InputSource();
+    virtual std::string getSource() const = 0;
 };
 
 /*
@@ -48,8 +53,16 @@ protected:
   to overload.
 */
 class InputFile : public InputSource {
+private:
+    std::ifstream file;
+    std::string findFPathWithoutFName() const;
 public:
   InputFile(const std::string& filePath);
+  virtual ~InputFile();
+  virtual std::string getSource() const;
+  std::istream& open();
+
 };
+
 
 #endif // INPUT_H_

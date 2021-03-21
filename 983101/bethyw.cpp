@@ -186,6 +186,7 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
     if (!inputDatasets.empty()){
         for (auto it = inputDatasets.begin(); it != inputDatasets.end(); ++it) {
             std::string &code = *it;
+            //https://stackoverflow.com/questions/313970/how-to-convert-stdstring-to-lower-case
             std::transform(code.begin(), code.end(), code.begin(), ::tolower);
         }
     }
@@ -204,17 +205,22 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
         for (auto it = inputDatasets.begin(); it != inputDatasets.end(); ++it) {
             bool matchFound = false;
             std::string &code = *it;
-            // populate the return vector, datasetsToImport, with all valid arguments from allDatasets
-            for (unsigned int j = 0; j < numDatasets; j++) {
-                if (code == allDatasets[j].CODE) {
-                    matchFound = true;
-                    datasetsToImport.push_back(allDatasets[j]);
-                    break;
+
+            try {
+                // populate the return vector, datasetsToImport, with all valid arguments from allDatasets
+                for (unsigned int j = 0; j < numDatasets; j++) {
+                    if (code == allDatasets[j].CODE) {
+                        matchFound = true;
+                        datasetsToImport.push_back(allDatasets[j]);
+                        break;
+                    }
                 }
-            }
-            // throw exception if argument is not found in allDatasets
-            if (!matchFound) {
-                throw std::invalid_argument("No dataset matches key: " + code);
+                // throw exception if argument is not found in allDatasets
+                if (!matchFound) {
+                    throw std::invalid_argument("No dataset matches key: " + code);
+                }
+            } catch (const std::invalid_argument & ia) {
+                std::cout << ia.what();
             }
         }
     }
@@ -277,12 +283,17 @@ std::unordered_set<std::string> BethYw::parseAreasArg(cxxopts::ParseResult& args
           }
           // otherwise add argument to filter if it is valid, if not, throw exception
           else {
-              if (area.length() == 9 && area.find("W060000") != std::string::npos) {
-                  areas.insert(area);
+              try {
+                  if (area.length() == 9 && area.find("W060000") != std::string::npos) {
+                      areas.insert(area);
+                  }
+                  else {
+                      throw std::invalid_argument("Invalid input for area argument");
+                  }
+              } catch (const std::invalid_argument & ia){
+                  std::cout<<ia.what();
               }
-              else {
-                  throw std::invalid_argument("Invalid input for area argument");
-              }
+
           }
       }
   }
@@ -349,6 +360,12 @@ std::unordered_set<std::string> BethYw::parseMeasuresArg(cxxopts::ParseResult& a
   value, or two four digit year values separated by a hyphen (i.e. either 
   YYYY or YYYY-ZZZZ).
 
+ 0-0
+ 2010-0
+ 0-2010
+ 2010
+ 2010-2020
+
   This should be parsed as two integers and inserted into a std::tuple,
   representing the start and end year (inclusive). If one or both values are 0,
   then there is no filter to be applied. If no year argument is given return
@@ -381,7 +398,7 @@ std::tuple<unsigned int, unsigned int> BethYw::parseYearsArg(cxxopts::ParseResul
             // https://stackoverflow.com/questions/14265581/parse-split-a-string-in-c-using-string-delimiter-standard-c
             startYear = std::stoi(inputYears.substr(0, inputYears.find('-')));
             endYear = std::stoi(inputYears.erase(0, (inputYears.find('-') + 1)));
-        } catch (std::exception & ia) {
+        } catch (const std::exception & ia) {
             throw std::invalid_argument("Invalid input for years argument");
         }
     }
@@ -389,9 +406,24 @@ std::tuple<unsigned int, unsigned int> BethYw::parseYearsArg(cxxopts::ParseResul
     else {
         try {
             startYear = endYear = std::stoi(inputYears);
-        } catch (std::exception & ia) {
+        } catch (const std::exception & ia) {
             throw std::invalid_argument("Invalid input for years argument");
         }
+    }
+
+    try {
+        unsigned int slength = std::to_string(startYear).length();
+        unsigned int elength = std::to_string(endYear).length();
+        if(slength != 1 && slength != 4) {
+            throw std::invalid_argument("Invalid input for years argument");
+        }
+
+        if(elength != 1 && elength != 4){
+            throw std::invalid_argument("Invalid input for years argument");
+        }
+
+    } catch (const std::invalid_argument & ia) {
+        std::cout << ia.what();
     }
 
     // no filter is applied if argument is empty, or if the single year provided is 0,
