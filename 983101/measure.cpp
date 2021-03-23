@@ -133,7 +133,7 @@ const double Measure::getValue(unsigned int year) const{
         return this->measureData.at(year);
     }
     else {
-        throw std::out_of_range("No value found for year " + year);
+        throw std::out_of_range(&"No value found for year " [year]);
     }
 }
 
