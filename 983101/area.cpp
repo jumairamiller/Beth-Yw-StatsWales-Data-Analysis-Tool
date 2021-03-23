@@ -47,7 +47,7 @@ Area::Area(const std::string& localAuthorityCode) : localAuthorityCode(localAuth
     ...
     auto authCode = area.getLocalAuthorityCode();
 */
-const std::string Area::getLocalAuthorityCode() const{
+const std::string& Area::getLocalAuthorityCode() const{
     return this->localAuthorityCode;
 }
 
@@ -73,7 +73,7 @@ const std::string Area::getLocalAuthorityCode() const{
     ...
     auto name = area.getName(langCode);
 */
-const std::string Area::getName(std::string languageCode) const{
+const std::string& Area::getName(std::string languageCode) const{
     // account for case insensitive use inputs
     std::transform(languageCode.begin(), languageCode.end(), languageCode.begin(), ::tolower);
     // https://stackoverflow.com/questions/1939953/how-to-find-if-a-given-key-exists-in-a-c-stdmap
@@ -164,7 +164,7 @@ void Area::setName(std::string languageCode, std::string name){
     ...
     auto measure2 = area.getMeasure("pop");
 */
-const Measure Area::getMeasure(std::string key) const {
+const Measure& Area::getMeasure(std::string key) const {
     // account for case insensitive user inputs
     std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 

@@ -62,7 +62,7 @@ Measure::Measure(std::string measureCode, const std::string &label) : label(labe
     ...
     auto codename2 = measure.getCodename();
 */
-const std::string Measure::getCodename() const noexcept{
+const std::string& Measure::getCodename() const noexcept{
     return this->measureCode;
 }
 
@@ -83,7 +83,7 @@ const std::string Measure::getCodename() const noexcept{
     ...
     auto label = measure.getLabel();
 */
-const std::string Measure::getLabel() const noexcept{
+const std::string& Measure::getLabel() const noexcept{
     return this->label;
 }
 
@@ -128,7 +128,7 @@ void Measure::setLabel(std::string label){
     ...
     auto value = measure.getValue(1999); // returns 12345678.9
 */
-const double Measure::getValue(unsigned int year) const{
+const double& Measure::getValue(unsigned int year) const{
     if (this->measureData.count(year) == 1){
         return this->measureData.at(year);
     }

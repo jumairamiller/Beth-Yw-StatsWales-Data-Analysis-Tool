@@ -33,16 +33,16 @@ private:
 
 public:
     Measure(std::string code, const std::string &label);
-    const std::string getCodename() const noexcept;
-    const std::string getLabel() const noexcept;
+    const std::string& getCodename() const noexcept;
+    const std::string& getLabel() const noexcept;
     void setLabel(std::string label);
-    const double getValue(unsigned int key) const;
+    const double& getValue(unsigned int key) const;
     void setValue(unsigned int key, double value);
     unsigned int size() const noexcept;
     const double getDifference() const noexcept;
     const double getDifferenceAsPercentage() const noexcept;
     const double getAverage() const noexcept;
-    const std::map<unsigned int, double> getData() const;
+    const std::map<unsigned int, double>& getData() const;
     friend bool operator==(const Measure& lhs, const Measure& rhs);
 };
 
