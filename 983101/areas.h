@@ -13,7 +13,7 @@
 
   Measure       — Represents a single measure for an area, e.g.
    |              population. Contains a human-readable label and a map of
-   |              the measure accross a number of years.
+   |              the measure across a number of years.
    |
    +-> Area       Represents an area. Contains a unique local authority code
         |         used in national statistics, a map of the names of the area 
@@ -49,10 +49,12 @@ using YearFilterTuple = std::tuple<unsigned int, unsigned int>;
   An alias for the data within an Areas object stores Area objects.
 
   TODO: you should remove the declaration of the Null class below, and set
-  AreasContainer to a valid Standard Library container of your choosing.
+  AreasContainer is a Standard Library Multimap because the key, localAuthorityCode,
+  may have multiple translations of the human-readable name. The data will be ordered by year
 */
 class Null { };
-using AreasContainer = Null;
+
+using AreasContainer = std::map<std::string, Area>;
 
 /*
   Areas is a class that stores all the data categorised by area. The 
@@ -69,32 +71,35 @@ using AreasContainer = Null;
   to overload.
 */
 class Areas {
+private:
+    AreasContainer areasContainer;
+
 public:
-  Areas();
-  
-  void populateFromAuthorityCodeCSV(
-      std::istream& is,
-      const BethYw::SourceColumnMapping& cols,
-      const StringFilterSet * const areas = nullptr)
-      noexcept(false);
+    Areas();
+    void setArea(std::string localAuthorityCode, Area area);
+    const Area getArea(std::string localAuthorityCode) const;
+    unsigned int size() const noexcept;
+    void populateFromAuthorityCodeCSV(
+            std::istream& is,
+            const BethYw::SourceColumnMapping& cols,
+            const StringFilterSet * const areas = nullptr) noexcept(false);
 
-  //Standard populate function
-  void populate(
-      std::istream& is,
-      const BethYw::SourceDataType& type,
-      const BethYw::SourceColumnMapping& cols) noexcept(false); // function may throw exceptions if needed
+    //Standard populate function
+    void populate(
+            std::istream& is,
+            const BethYw::SourceDataType& type,
+            const BethYw::SourceColumnMapping& cols) noexcept(false); // function may throw exceptions if needed
 
-  // Overload the standard populate function to consider filters
-  void populate(
-      std::istream& is,
-      const BethYw::SourceDataType& type,
-      const BethYw::SourceColumnMapping& cols,
-      const StringFilterSet * const areasFilter = nullptr,
-      const StringFilterSet * const measuresFilter = nullptr,
-      const YearFilterTuple * const yearsFilter = nullptr)
-      noexcept(false);// function may throw exceptions if needed
+    // Overload the standard populate function to consider filters
+    void populate(
+            std::istream& is,
+            const BethYw::SourceDataType& type,
+            const BethYw::SourceColumnMapping& cols,
+            const StringFilterSet * const areasFilter = nullptr,
+            const StringFilterSet * const measuresFilter = nullptr,
+            const YearFilterTuple * const yearsFilter = nullptr) noexcept(false);// function may throw exceptions if needed
 
-  std::string toJSON() const;
+    std::string toJSON() const;
 };
 
 #endif // AREAS_H

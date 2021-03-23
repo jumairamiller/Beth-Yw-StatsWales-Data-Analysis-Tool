@@ -20,12 +20,10 @@
 
 #include <stdexcept>
 #include <string>
-
 #include "measure.h"
+#include <map>
 
 /*
-  TODO: Measure::Measure(codename, label);
-
   Construct a single Measure, that has values across many years.
 
   All StatsWales JSON files have a codename for measures. You should convert 
@@ -42,14 +40,13 @@
     std::string label = "Population";
     Measure measure(codename, label);
 */
-Measure::Measure(std::string codename, const std::string &label) {
-  throw std::logic_error("Measure::Measure() has not been implemented!");
+Measure::Measure(std::string measureCode, const std::string &label) : label(label) {
+    std::transform(measureCode.begin(), measureCode.end(), measureCode.begin(), ::tolower);
+    this->measureCode = measureCode;
 }
 
 /*
-  TODO: Measure::getCodename()
-
-  Retrieve the code for the Measure. This function should be callable from a 
+  Retrieve the code for the Measure. This function should be callable from a
   constant context and must promise to not modify the state of the instance or 
   throw an exception.
 
@@ -65,12 +62,12 @@ Measure::Measure(std::string codename, const std::string &label) {
     ...
     auto codename2 = measure.getCodename();
 */
-
+const std::string Measure::getCodename() const noexcept{
+    return this->measureCode;
+}
 
 /*
-  TODO: Measure::getLabel()
-
-  Retrieve the human-friendly label for the Measure. This function should be 
+  Retrieve the human-friendly label for the Measure. This function should be
   callable from a constant context and must promise to not modify the state of 
   the instance and to not throw an exception.
 
@@ -86,11 +83,11 @@ Measure::Measure(std::string codename, const std::string &label) {
     ...
     auto label = measure.getLabel();
 */
-
+const std::string Measure::getLabel() const noexcept{
+    return this->label;
+}
 
 /*
-  TODO: Measure::setLabel(label)
-
   Change the label for the Measure.
 
   @param label
@@ -102,11 +99,11 @@ Measure::Measure(std::string codename, const std::string &label) {
     ...
     measure.setLabel("New Population");
 */
-
+void Measure::setLabel(std::string label){
+    this->label = label;
+}
 
 /*
-  TODO: Measure::getValue(key)
-
   Retrieve a Measure's value for a given year.
 
   @param key
@@ -131,7 +128,14 @@ Measure::Measure(std::string codename, const std::string &label) {
     ...
     auto value = measure.getValue(1999); // returns 12345678.9
 */
-
+const double Measure::getValue(unsigned int year) const{
+    if (this->measureData.count(year) == 1){
+        return this->measureData.at(year);
+    }
+    else {
+        throw std::out_of_range("No value found for year " + year);
+    }
+}
 
 /*
   TODO: Measure::setValue(key, value)
@@ -155,7 +159,14 @@ Measure::Measure(std::string codename, const std::string &label) {
 
     measure.setValue(1999, 12345678.9);
 */
-
+void Measure::setValue(unsigned int year, double value){
+    // if key already exists within container, overwrite the data
+    if (this->measureData.count(year) == 1){
+        this->measureData.find(year)->second = value;
+    }
+    // otherwise create a pair to insert into map
+    this->measureData.insert({year,value});
+}
 
 /*
   TODO: Measure::size()
@@ -175,7 +186,9 @@ Measure::Measure(std::string codename, const std::string &label) {
     measure.setValue(1999, 12345678.9);
     auto size = measure.size(); // returns 1
 */
-
+unsigned int Measure::size() const noexcept{
+    return this->measureData.size();
+}
 
 /*
   TODO: Measure::getDifference()
@@ -194,7 +207,12 @@ Measure::Measure(std::string codename, const std::string &label) {
     measure.setValue(1999, 12345679.9);
     auto diff = measure.getDifference(); // returns 1.0
 */
-
+const double Measure::getDifference() const noexcept{
+    double firstVal = this->measureData.begin()->second;
+    double lastVal = this->measureData.end()->second;
+    if (lastVal > firstVal){return lastVal-firstVal;}
+    else{return 0;}
+}
 
 /*
   TODO: Measure::getDifferenceAsPercentage()
@@ -272,8 +290,6 @@ Measure::Measure(std::string codename, const std::string &label) {
 
 
 /*
-  TODO: operator==(lhs, rhs)
-
   Overload the == operator for two Measure objects. Two Measure objects
   are only equal when their codename, label and data are all equal.
 
@@ -287,4 +303,10 @@ Measure::Measure(std::string codename, const std::string &label) {
     true if both Measure objects have the same codename, label and data; false
     otherwise
 */
+bool operator==(const Measure& lhs, const Measure& rhs) {
+    bool sameMeasureCode = lhs.measureCode == rhs.measureCode;
+    bool sameLabel = lhs.label == rhs.label;
+    bool sameData = lhs.measureData == rhs.measureData;
+    return sameMeasureCode && sameLabel && sameData;
+}
 

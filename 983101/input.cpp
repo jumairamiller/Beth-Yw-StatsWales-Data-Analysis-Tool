@@ -22,7 +22,7 @@
 #include <utility>
 #include <iostream>
 
-/*
+/**
   Constructor for an InputSource.
 
   @param source
@@ -32,7 +32,7 @@ InputSource::InputSource(const std::string& source) : source(source) {}
 
 InputSource::~InputSource() {}
 
-/*
+/**
  This pure virtual function is only callable from a constant context.
 
   @return
@@ -42,7 +42,7 @@ std::string InputFile::getSource() const{
     return this->source;
 }
 
-/*
+/**
   Constructor for a file-based source.
 
   @param path
@@ -56,21 +56,21 @@ InputFile::InputFile(const std::string& filePath) : InputSource(filePath) {}
 InputFile::~InputFile() {}
 
 
-/**
+/** (HELPER FUNCTION WHICH I ENDED UP NOT USING)
  * Method to verify that the file path was not mis-typed
  * @return a string of the file path minus the last occurrence of delimiter / or \
- */
+*/
+/*
 std::string InputFile::findFPathWithoutFName() const {
     size_t posBeforeFileName = this->getSource().find_last_of("/");
     std::string pathToFile = this->getSource().substr(0, posBeforeFileName+1);
     return pathToFile;
 }
+*/
 
 
 
 /*
-  TODO: InputFile::open()
-
   Open a file stream to the file path retrievable from getSource()
   and return a reference to the stream.
 
@@ -104,7 +104,7 @@ std::istream& InputFile::open() {
             std::string pathToFile = findFPathWithoutFName();
             // if the file path is wrong, replace it with correct directory
             if (pathToFile != "./datasets/"){
-                std::cout << "Directory to file: " << pathToFile << " is not valid.";
+                std::cout << "Directory to file: " << pathToFile << " was not valid.";
                 this->getSource().replace(this->getSource().find(pathToFile), pathToFile.length(), "./datasets/");
                 // try opening file with corrected file path
                 try{

@@ -13,9 +13,6 @@
 
   Areas is also responsible for importing data from a stream (using the
   various populate() functions) and creating the Area and Measure objects.
-
-  This file contains numerous functions you must implement. Each function you
-  must implement has a TODO block comment. 
 */
 
 #include <stdexcept>
@@ -24,6 +21,7 @@
 #include <stdexcept>
 #include <tuple>
 #include <unordered_set>
+#include <set>
 
 #include "lib_json.hpp"
 
@@ -37,20 +35,15 @@
 using json = nlohmann::json;
 
 /*
-  TODO: Areas::Areas()
-
   Constructor for an Areas object.
 
   @example
     Areas data = Areas();
 */
-Areas::Areas() {
-  throw std::logic_error("Areas::Areas() has not been implemented!");
-}
+Areas::Areas() : areasContainer(std::map<std::string, Area>()) {}
+
 
 /*
-  TODO: Areas::setArea(localAuthorityCode, area)
-
   Add a particular Area to the Areas object.
 
   If an Area already exists with the same local authority code, overwrite all
@@ -73,11 +66,37 @@ Areas::Areas() {
     Area area(localAuthorityCode);
     data.setArea(localAuthorityCode, area);
 */
+void Areas::setArea(std::string localAuthorityCode, Area area){
+    // if key already exists within container, overwrite all data
+    if (this->areasContainer.count(localAuthorityCode) == 1){
+        //create new area object to combine existing area object with new area object of the same key
+        Area combinedArea(localAuthorityCode);
+
+        //combine the two area objects' names and measures
+        std::unordered_map<std::string, std::string> combinedAreaNames =
+                this->areasContainer.at(localAuthorityCode).combineNamesWith(area);
+        std::unordered_map<std::string, Measure> combinedAreaMeasures =
+                this->areasContainer.at(localAuthorityCode).combineMeasuresWith(area);
+
+        // define combined area object
+        for (auto &name : combinedAreaNames) {
+            combinedArea.setName(name.first, name.second);
+        }
+        for (auto &measure : combinedAreaMeasures) {
+            combinedArea.setMeasure(measure.first, measure.second);
+        }
+
+        this->areasContainer.find(localAuthorityCode)->second = combinedArea;
+    } else {
+        // otherwise create a pair to insert into multimap
+        // https://en.cppreference.com/w/cpp/container/multimap/insert
+        localAuthorityCode[0] = std::toupper(localAuthorityCode[0]);
+        this->areasContainer.insert({localAuthorityCode,area});
+    }
+}
 
 
 /*
-  TODO: Areas::getArea(localAuthorityCode)
-
   Retrieve an Area instance with a given local authority code.
 
   @param localAuthorityCode
@@ -98,12 +117,17 @@ Areas::Areas() {
     ...
     Area area2 = areas.getArea("W06000023");
 */
-
+const Area Areas::getArea(std::string localAuthorityCode) const{
+    if (this->areasContainer.count(localAuthorityCode) == 1){
+        return this->areasContainer.at(localAuthorityCode);
+    }
+    else {
+        throw std::out_of_range("The provided area code, " + localAuthorityCode + ", does not exist within the Areas dataset");
+    }
+}
 
 /*
-  TODO: Areas::size()
-
-  Retrieve the number of Areas within the container. This function should be 
+  Retrieve the number of Areas within the container. This function should be
   callable from a constant context, not modify the state of the instance, and
   must promise not throw an exception.
 
@@ -118,7 +142,9 @@ Areas::Areas() {
     
     auto size = areas.size(); // returns 1
 */
-
+unsigned int Areas::size() const noexcept{
+    return this->areasContainer.size();
+}
 
 /*
   TODO: Areas::populateFromAuthorityCodeCSV(is, cols, areasFilter)

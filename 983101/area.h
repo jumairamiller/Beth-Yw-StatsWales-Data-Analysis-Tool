@@ -17,6 +17,7 @@
  */
 
 #include <string>
+#include <unordered_map>
 
 #include "measure.h"
 
@@ -30,7 +31,23 @@
   to overload.
 */
 class Area {
-  Area(const std::string& localAuthorityCode);
+private:
+    std::string localAuthorityCode;
+    std::unordered_map<std::string, std::string> names;
+    std::unordered_map<std::string, Measure> measures;
+
+public:
+    Area(const std::string& localAuthorityCode);
+    const std::string getLocalAuthorityCode() const;
+    const std::string getName(std::string languageCode) const;
+    std::unordered_map<std::string, std::string> combineNamesWith(Area otherArea);
+    void setName(std::string languageCode, std::string name);
+    const Measure getMeasure(std::string key) const;
+    std::unordered_map<std::string, Measure> combineMeasuresWith(Area otherArea);
+    void setMeasure(std::string measureCode, Measure measure);
+    unsigned int size() const noexcept;
+    //friend std::ostream& operator<<(std::ostream& os, const Area& area);
+    friend bool operator==(const Area& lhs, const Area& rhs);
 };
 
 #endif // AREA_H_
