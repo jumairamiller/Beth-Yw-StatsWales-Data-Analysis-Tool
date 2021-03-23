@@ -40,8 +40,8 @@ public:
     void setValue(unsigned int key, double value);
     unsigned int size() const noexcept;
     const double getDifference() const noexcept;
-    const double getDifferenceAsPercentage() const;
-    const double getAverage() const;
+    const double getDifferenceAsPercentage() const noexcept;
+    const double getAverage() const noexcept;
     const std::map<unsigned int, double> getData() const;
     friend bool operator==(const Measure& lhs, const Measure& rhs);
 };

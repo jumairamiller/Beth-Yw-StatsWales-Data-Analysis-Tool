@@ -126,15 +126,20 @@ std::unordered_map<std::string, std::string> Area::combineNamesWith(Area otherAr
     area.setName(langCodeWelsh, langValueWelsh);
 */
 void Area::setName(std::string languageCode, std::string name){
-    if (languageCode.length() != 3){
-        throw std::invalid_argument("The provided language code is not a valid ISO 639-3 identifier:" + languageCode);
+    //https://stackoverflow.com/posts/22741309/revisions
+    // If languageCode contains digits or is not 3 characters long
+    if (languageCode.length() != 3 || atoi(languageCode.c_str())){
+        //throw std::invalid_argument("The provided language code is not a valid ISO 639-3 identifier:" + languageCode);
+        throw std::invalid_argument("Area::setName: Language code must be three alphabetical letters only");
     }
-    std::transform(languageCode.begin(), languageCode.end(), languageCode.begin(), ::tolower);
-    if (names.count(languageCode) == 1){
-        std::cout << "A translation for the area name is the provided language code already exists: " << languageCode;
+    else {
+        std::transform(languageCode.begin(), languageCode.end(), languageCode.begin(), ::tolower);
+        if (names.count(languageCode) == 1){
+            std::cout << "A translation for the area name is the provided language code already exists: " << languageCode;
+        }
+        name[0] = std::toupper(name[0]);
+        this->names.insert({languageCode,name});
     }
-    name[0] = std::toupper(name[0]);
-    this->names.insert({languageCode,name});
 }
 
 /*

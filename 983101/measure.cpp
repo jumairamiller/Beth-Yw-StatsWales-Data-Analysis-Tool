@@ -138,8 +138,6 @@ const double Measure::getValue(unsigned int year) const{
 }
 
 /*
-  TODO: Measure::setValue(key, value)
-
   Add a particular year's value to the Measure object. If a value already
   exists for the year, replace it.
 
@@ -169,8 +167,6 @@ void Measure::setValue(unsigned int year, double value){
 }
 
 /*
-  TODO: Measure::size()
-
   Retrieve the number of years data we have for this measure. This function
   should be callable from a constant context and must promise to not change
   the state of the instance or throw an exception.
@@ -191,8 +187,6 @@ unsigned int Measure::size() const noexcept{
 }
 
 /*
-  TODO: Measure::getDifference()
-
   Calculate the difference between the first and last year imported. This
   function should be callable from a constant context and must promise to not
   change the state of the instance or throw an exception.
@@ -210,14 +204,12 @@ unsigned int Measure::size() const noexcept{
 const double Measure::getDifference() const noexcept{
     double firstVal = this->measureData.begin()->second;
     double lastVal = this->measureData.end()->second;
-    if (lastVal > firstVal){return lastVal-firstVal;}
-    else{return 0;}
+    if (lastVal > firstVal) {return lastVal-firstVal;}
+    else {return 0;}
 }
 
 /*
-  TODO: Measure::getDifferenceAsPercentage()
-
-  Calculate the difference between the first and last year imported as a 
+  Calculate the difference between the first and last year imported as a
   percentage. This function should be callable from a constant context and
   must promise to not change the state of the instance or throw an exception.
 
@@ -231,11 +223,19 @@ const double Measure::getDifference() const noexcept{
     measure.setValue(2010, 12345679.9);
     auto diff = measure.getDifferenceAsPercentage();
 */
-
+const double Measure::getDifferenceAsPercentage() const noexcept{
+    double firstVal = this->measureData.begin()->second;
+    double lastVal = this->measureData.end()->second;
+    if (lastVal > firstVal){
+        double difference = lastVal-firstVal;
+        return ((difference/firstVal)*100);
+    }
+    else{
+        return 0;
+    }
+}
 
 /*
-  TODO: Measure::getAverage()
-
   Calculate the average/mean value for all the values. This function should be
   callable from a constant context and must promise to not change the state of 
   the instance or throw an exception.
@@ -249,7 +249,20 @@ const double Measure::getDifference() const noexcept{
     measure.setValue(1999, 12345679.9);
     auto diff = measure.getDifference(); // returns 1
 */
-
+const double Measure::getAverage() const noexcept{
+    // return 0 if average cannot be computed
+    if (this->measureData.empty()){
+        return measureData.size();
+    }
+    // otherwise return average
+    else {
+        double total = 0;
+        for(auto aValue : this->measureData){
+            total += aValue.second;
+        }
+        return total/(this->measureData.size());
+    }
+}
 
 /*
   TODO: operator<<(os, measure)
