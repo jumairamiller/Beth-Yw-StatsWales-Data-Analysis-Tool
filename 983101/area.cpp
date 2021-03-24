@@ -19,6 +19,7 @@
 
 #include <stdexcept>
 #include <iostream>
+#include <algorithm>
 
 #include "area.h"
 
@@ -93,7 +94,7 @@ const std::string& Area::getName(std::string languageCode) const{
     }
 }
 
-std::unordered_map<std::string, std::string> Area::combineNamesWith(Area otherArea) {
+std::unordered_map<std::string, std::string> Area::combineNamesWith(Area& otherArea) {
     std::unordered_map<std::string, std::string> combinedNames = otherArea.names;
     for (auto &name : this->names) {
         combinedNames.insert(name);
@@ -164,7 +165,7 @@ void Area::setName(std::string languageCode, std::string name){
     ...
     auto measure2 = area.getMeasure("pop");
 */
-const Measure& Area::getMeasure(std::string key) const {
+Measure& Area::getMeasure(std::string key){
     // account for case insensitive user inputs
     std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
@@ -180,8 +181,8 @@ const Measure& Area::getMeasure(std::string key) const {
  * Method to return a combined map of measures from existing area and another area object
  * @return combined map of measures of two area objects
  */
-std::unordered_map<std::string, Measure> Area::combineMeasuresWith(Area otherArea){
-    std::unordered_map<std::string, Measure> combinedMeasures = otherArea.measures;
+std::unordered_map<std::string, Measure> Area::combineMeasuresWith(Area& otherArea){
+    std::unordered_map<std::string, Measure>& combinedMeasures = otherArea.measures;
     for (auto &measure : this->measures) {
         combinedMeasures.insert(measure);
     }

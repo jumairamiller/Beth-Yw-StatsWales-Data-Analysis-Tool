@@ -203,24 +203,21 @@ std::vector<BethYw::InputFileSource> BethYw::parseDatasetsArg(
     else {
         // iterate through each dataset argument passed in
         for (auto it = inputDatasets.begin(); it != inputDatasets.end(); ++it) {
-            bool matchFound = false;
+
             std::string &code = *it;
 
-            try {
-                // populate the return vector, datasetsToImport, with all valid arguments from allDatasets
-                for (unsigned int j = 0; j < numDatasets; j++) {
-                    if (code == allDatasets[j].CODE) {
-                        matchFound = true;
-                        datasetsToImport.push_back(allDatasets[j]);
-                        break;
-                    }
+            bool matchFound = false;
+            // populate the return vector, datasetsToImport, with all valid arguments from allDatasets
+            for (unsigned int j = 0; j < numDatasets; j++) {
+                if (code == allDatasets[j].CODE) {
+                    matchFound = true;
+                    datasetsToImport.push_back(allDatasets[j]);
+                    break;
                 }
-                // throw exception if argument is not found in allDatasets
-                if (!matchFound) {
-                    throw std::invalid_argument("No dataset matches key: " + code);
-                }
-            } catch (const std::invalid_argument & ia) {
-                std::cout << ia.what();
+            }
+            // throw exception if argument is not found in allDatasets
+            if (!matchFound) {
+                throw std::invalid_argument("No dataset matches key: " + code);
             }
         }
     }

@@ -22,6 +22,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <set>
+#include <sstream>
 
 #include "lib_json.hpp"
 
@@ -41,7 +42,6 @@ using json = nlohmann::json;
     Areas data = Areas();
 */
 Areas::Areas() : areasContainer(std::map<std::string, Area>()) {}
-
 
 /*
   Add a particular Area to the Areas object.
@@ -117,12 +117,12 @@ void Areas::setArea(std::string localAuthorityCode, Area area){
     ...
     Area area2 = areas.getArea("W06000023");
 */
-const Area Areas::getArea(std::string localAuthorityCode) const{
+Area& Areas::getArea(std::string localAuthorityCode){
     if (this->areasContainer.count(localAuthorityCode) == 1){
         return this->areasContainer.at(localAuthorityCode);
     }
     else {
-        throw std::out_of_range("The provided area code, " + localAuthorityCode + ", does not exist within the Areas dataset");
+        throw std::out_of_range("No area found matching " + localAuthorityCode);
     }
 }
 
@@ -201,8 +201,114 @@ void Areas::populateFromAuthorityCodeCSV(
     std::istream &is,
     const BethYw::SourceColumnMapping &cols,
     const StringFilterSet * const areasFilter) {
-  throw std::logic_error(
-    "Areas::populateFromAuthorityCodeCSV() has not been implemented!");
+
+    if (cols.size() != 3){
+        throw std::out_of_range("There are not enough columns in cols parameter");
+        //cols.find(BethYw::AUTH_CODE) != cols.end() && cols.find(BethYw::AUTH_NAME_ENG) != cols.end();
+    }
+
+
+    // unordered sets to hold each of the three columns from areas.csv dataset
+    std::vector<std::string> allAreaCodes, areaEngNames, areaCymNames;
+
+    // populate container with extracted csv file data if able to open
+    if (is.good()){
+
+        std::string line, content;
+        std::vector<std::string> rowData;
+        //while file has content, store data from each line
+        while(getline(is,line)){
+
+            // Create string stream of current line
+            std::istringstream currLine(line);
+            int colIndex = 0;
+
+            // extract each data in the row of the current line
+            // https://www.gormanalysis.com/blog/reading-and-writing-csv-files-with-cpp/
+            while(std::getline(currLine, content, ',')){
+                // ignore the csv file headings (i.e. first record)
+                if (content == cols.at(BethYw::AUTH_CODE) ||
+                content == cols.at(BethYw::AUTH_NAME_ENG) ||
+                content == cols.at(BethYw::AUTH_NAME_CYM)) {
+                    continue;
+                }
+                // split data of each row into their respective column vectors
+                switch (colIndex) {
+                    case 0:
+                        allAreaCodes.push_back(content);
+                        ++colIndex;
+                        break;
+                    case 1:
+                        areaEngNames.push_back(content);
+                        ++colIndex;
+                        break;
+                    default:
+                        areaCymNames.push_back(content);
+                }
+            }
+        }
+
+        // if no filter was specified or filter is empty, return area objects
+        if(!areasFilter || areasFilter->empty()){
+            // ignore headers of each column in the file
+            for (unsigned int i = 0; i < allAreaCodes.size(); i++) {
+                auto areaCode = allAreaCodes.begin();
+                auto engName = areaEngNames.begin();
+                auto cymName = areaCymNames.begin();
+
+                std::advance(areaCode,i);
+                std::advance(engName,i);
+                std::advance(cymName,i);
+
+                Area area(*areaCode);
+                area.setName("eng", *engName);
+                area.setName("cym", *cymName);
+                this->areasContainer.insert({*areaCode,area});
+            }
+        } else {
+            for (auto it = areasFilter->begin(); it != areasFilter->end(); it++) {
+                auto & requestedArea = *it;
+                // throw exception if areaCode is not found
+                bool found = false;
+                for(auto areaCode : allAreaCodes){
+                    if(areaCode == requestedArea){
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found){
+                    throw std::invalid_argument("No area found matching " + requestedArea);
+                }
+                else {
+
+                    // find index of each requested area from areasFilter
+                    unsigned int index = 0;
+                    for (auto const &code : allAreaCodes) {
+                        if(requestedArea == code){
+                            break;
+                        } else { index++; }
+                    }
+
+                    // construct area object for given area code and add it to areasContainer
+                    auto areaCode = allAreaCodes.begin();
+                    auto engName = areaEngNames.begin();
+                    auto cymName = areaEngNames.begin();
+                    std::advance(areaCode,index);
+                    std::advance(engName,index);
+                    std::advance(cymName,index);
+                    Area area(*areaCode);
+                    area.setName("eng", *engName);
+                    area.setName("cym", *cymName);
+                    this->areasContainer.insert({*areaCode,area});
+                }
+            }
+        }
+    }
+    // otherwise throw exception if unable to access stream
+    else{
+        throw std::runtime_error("Error occurred while attempting to parse area.csv file");
+    }
+
 }
 
 /*

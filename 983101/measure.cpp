@@ -22,6 +22,8 @@
 #include <string>
 #include "measure.h"
 #include <map>
+#include <algorithm>
+
 
 /*
   Construct a single Measure, that has values across many years.

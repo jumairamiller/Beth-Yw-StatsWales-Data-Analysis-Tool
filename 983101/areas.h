@@ -52,7 +52,6 @@ using YearFilterTuple = std::tuple<unsigned int, unsigned int>;
   AreasContainer is a Standard Library Multimap because the key, localAuthorityCode,
   may have multiple translations of the human-readable name. The data will be ordered by year
 */
-class Null { };
 
 using AreasContainer = std::map<std::string, Area>;
 
@@ -77,7 +76,7 @@ private:
 public:
     Areas();
     void setArea(std::string localAuthorityCode, Area area);
-    const Area getArea(std::string localAuthorityCode) const;
+    Area& getArea(std::string localAuthorityCode);
     unsigned int size() const noexcept;
     void populateFromAuthorityCodeCSV(
             std::istream& is,

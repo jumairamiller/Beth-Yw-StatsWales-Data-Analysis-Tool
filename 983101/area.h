@@ -40,10 +40,10 @@ public:
     Area(const std::string& localAuthorityCode);
     const std::string& getLocalAuthorityCode() const;
     const std::string& getName(std::string languageCode) const;
-    std::unordered_map<std::string, std::string> combineNamesWith(Area otherArea);
+    std::unordered_map<std::string, std::string> combineNamesWith(Area& otherArea);
     void setName(std::string languageCode, std::string name);
-    const Measure& getMeasure(std::string key) const;
-    std::unordered_map<std::string, Measure> combineMeasuresWith(Area otherArea);
+    Measure& getMeasure(std::string key);
+    std::unordered_map<std::string, Measure> combineMeasuresWith(Area& otherArea);
     void setMeasure(std::string measureCode, Measure measure);
     unsigned int size() const noexcept;
     //friend std::ostream& operator<<(std::ostream& os, const Area& area);
