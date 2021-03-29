@@ -75,13 +75,25 @@ private:
 
 public:
     Areas();
+
     void setArea(std::string localAuthorityCode, Area area);
+
     Area& getArea(std::string localAuthorityCode);
+
     unsigned int size() const noexcept;
+
     void populateFromAuthorityCodeCSV(
             std::istream& is,
             const BethYw::SourceColumnMapping& cols,
             const StringFilterSet * const areas = nullptr) noexcept(false);
+
+    void populateFromWelshStatsJSON(
+            std::istream& is,
+            const BethYw::SourceColumnMapping& cols,
+            const StringFilterSet * const areasFilter = nullptr,
+            const StringFilterSet * const measuresFilter = nullptr,
+            const YearFilterTuple * const yearsFilter = nullptr) noexcept(false);
+
 
     //Standard populate function
     void populate(

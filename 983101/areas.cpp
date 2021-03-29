@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <set>
 #include <sstream>
+#include <algorithm>
 
 #include "lib_json.hpp"
 
@@ -147,9 +148,7 @@ unsigned int Areas::size() const noexcept{
 }
 
 /*
-  TODO: Areas::populateFromAuthorityCodeCSV(is, cols, areasFilter)
-
-  This function specifically parses the compiled areas.csv file of local 
+  This function specifically parses the compiled areas.csv file of local
   authority codes, and their names in English and Welsh.
 
   This is a simple dataset that is a comma-separated values file (CSV), where
@@ -206,7 +205,6 @@ void Areas::populateFromAuthorityCodeCSV(
         throw std::out_of_range("There are not enough columns in cols parameter");
         //cols.find(BethYw::AUTH_CODE) != cols.end() && cols.find(BethYw::AUTH_NAME_ENG) != cols.end();
     }
-
 
     // unordered sets to hold each of the three columns from areas.csv dataset
     std::vector<std::string> allAreaCodes, areaEngNames, areaCymNames;
@@ -268,7 +266,7 @@ void Areas::populateFromAuthorityCodeCSV(
         } else {
             for (auto it = areasFilter->begin(); it != areasFilter->end(); it++) {
                 auto & requestedArea = *it;
-                // throw exception if areaCode is not found
+                // check if requested Area code in filter is valid
                 bool found = false;
                 for(auto areaCode : allAreaCodes){
                     if(areaCode == requestedArea){
@@ -276,6 +274,7 @@ void Areas::populateFromAuthorityCodeCSV(
                         break;
                     }
                 }
+                // throw exception if areaCode is not found
                 if(!found){
                     throw std::invalid_argument("No area found matching " + requestedArea);
                 }
@@ -308,7 +307,6 @@ void Areas::populateFromAuthorityCodeCSV(
     else{
         throw std::runtime_error("Error occurred while attempting to parse area.csv file");
     }
-
 }
 
 /*
@@ -322,7 +320,7 @@ void Areas::populateFromAuthorityCodeCSV(
   top-level keys: odata.metadata, value, odata.nextLink. value contains the
   data we need. Rather than been hierarchical, it contains data as a
   continuous list (e.g. as you would find in a table). For each row in value,
-  there is a mapping of various column headings and their respective vaues.
+  there is a mapping of various column headings and their respective values.
 
   Therefore, you need to go through the items in value (in a loop)
   using a JSON library. To help you, I've selected the nlohmann::json
@@ -415,7 +413,92 @@ void Areas::populateFromAuthorityCodeCSV(
       &measuresFilter,
       &yearsFilter);
 */
+void Areas::populateFromWelshStatsJSON(
+        std::istream& is,
+        const BethYw::SourceColumnMapping& cols,
+        const StringFilterSet * const areasFilter,
+        const StringFilterSet * const measuresFilter,
+        const YearFilterTuple * const yearsFilter) {
+    
+    json j;
+    is >> j;
 
+    // for each row of json file
+    for (auto& row : j["value"].items()) {
+        auto &data = row.value();
+
+        // retrieve data from json file
+        std::string localAuthorityCode = data[cols.at(BethYw::SourceColumn::AUTH_CODE)];
+        std::transform(localAuthorityCode.begin(), localAuthorityCode.end(), localAuthorityCode.begin(), ::toupper);
+
+        std::string engAreaName = data[cols.at(BethYw::SourceColumn::AUTH_NAME_ENG)];
+
+        unsigned int year = stoi((std::string) data[cols.at(BethYw::SourceColumn::YEAR)]);
+
+        std::string measureCode;
+        std::string measureLabel;
+        if(j["odata.metadata"] == "http://open.statswales.giv.wales/en-gb/dataset/$metadata#tran0152") {
+            measureCode = data[cols.at(BethYw::SourceColumn::SINGLE_MEASURE_CODE)];
+            measureLabel = data[cols.at(BethYw::SourceColumn::SINGLE_MEASURE_NAME)];
+        }
+        else {
+            measureCode = data[cols.at(BethYw::SourceColumn::MEASURE_CODE)];
+            measureLabel = data[cols.at(BethYw::SourceColumn::MEASURE_NAME)];
+        }
+        std::transform(measureCode.begin(), measureCode.end(), measureCode.begin(), ::tolower);
+
+        double value = 0;
+        if(j["odata.metadata"] == "http://open.statswales.giv.wales/en-gb/dataset/$metadata#envi0201") {
+            std::string dataStr = data[cols.at(BethYw::SourceColumn::VALUE)];
+            double value = std::stod(dataStr);
+        } else {
+            double value = data[cols.at(BethYw::SourceColumn::VALUE)];
+        }
+
+
+
+        // Handle Areas filter
+        // if no filter is applied create area objects and insert it into the areas container
+        if(areasFilter == nullptr || areasFilter->empty()){
+            Area area(localAuthorityCode);
+            area.setName("eng", engAreaName);
+            this->areasContainer.insert({localAuthorityCode, area});
+        }
+
+        // if filter is not empty or if a filter exists, only create areas for area names requested in filter
+        else{
+            //for each requested area by areaFiler
+            if(areasFilter->find(localAuthorityCode) != areasFilter->end() || areasFilter->find(engAreaName) != areasFilter->end()){
+                Area area(localAuthorityCode);
+                area.setName("eng", engAreaName);
+                this->setArea(localAuthorityCode, area);
+            }
+            else {
+                continue;
+            }
+        }
+
+        // Handle years and measures filters
+        for (auto &area : areasContainer){
+            for (auto &measure : area.second.getAllMeasures()){
+                // if measure exists, set measure of existing area object in area contaiiner
+                if(measuresFilter->find(measure.first) != measuresFilter->end()) {
+                    area.second.setMeasure(measureCode,area.second.getMeasure(measureCode));
+                }
+                // otherwise create measure and set it to area object
+                else {
+                    Measure measure(measureCode, measureLabel);
+                    measure.setValue(year, value);
+                    area.second.setMeasure(measureCode, measure);
+                }
+
+                if (std::get<1>(*yearsFilter) >= year) {
+                    measure.second.setValue(year,value);
+                }
+            }
+        }
+    }
+}
 
 /*
   TODO: Areas::populateFromAuthorityByYearCSV(is,

@@ -189,6 +189,10 @@ std::unordered_map<std::string, Measure> Area::combineMeasuresWith(Area& otherAr
     return combinedMeasures;
 }
 
+std::unordered_map<std::string, Measure> Area::getAllMeasures() noexcept{
+    //return all measures
+    return this->measures;
+}
 
 /**
   Add a particular Measure to this Area object. Note that the Measure's

@@ -44,6 +44,7 @@ public:
     void setName(std::string languageCode, std::string name);
     Measure& getMeasure(std::string key);
     std::unordered_map<std::string, Measure> combineMeasuresWith(Area& otherArea);
+    std::unordered_map<std::string, Measure> getAllMeasures() noexcept;
     void setMeasure(std::string measureCode, Measure measure);
     unsigned int size() const noexcept;
     //friend std::ostream& operator<<(std::ostream& os, const Area& area);
