@@ -7,8 +7,7 @@ The idea behind this assignment was to code according to a specification laid ou
 
 ### The program arguments:
 
-`‑‑dir arg` The directory arg contains the datasets that will be used (de‑
-fault: datasets/). This argument is optional (i.e., if the pro‑
+`‑‑dir arg` The directory arg contains the datasets that will be used (default: datasets/). This argument is optional (i.e., if the pro‑
 gram is run without the argument supplied, the value datasets
 is used).
 
