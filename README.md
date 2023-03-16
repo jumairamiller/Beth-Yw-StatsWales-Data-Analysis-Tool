@@ -1,9 +1,9 @@
 # Beth-Yw-StatsWales-Data-Analysis-Tool
 
 ## Background
-A simple data Parser tool in C++ that can read CSV and JSON files, some of which have been downloaded from the Statswales ![](https://statswales.gov.wales/Catalogue)   website. StatsWales is website holding publicly‑available data compiled by the Welsh Government. The datasets included all group series of measures over years, organised by area.
+A simple data Parser tool in C++ that can read CSV and JSON files, some of which have been downloaded from the Statswales [Statswales](https://statswales.gov.wales/Catalogue) website. StatsWales is website holding publicly‑available data compiled by the Welsh Government. The datasets included all group series of measures over years, organised by area.
 
-The idea behind this assignment was to code according to a specification laid out in documentation and Behaviour Driven Development style (BDD) test suites. Test Suites were implemented using the Catch2 Testing Framework ![](https://github.com/catchorg/Catch2).
+The idea behind this assignment was to code according to a specification laid out in documentation and Behaviour Driven Development style (BDD) test suites. Test Suites were implemented using the [Catch2 Testing Framework](https://github.com/catchorg/Catch2).
 
 ### The program arguments:
 
